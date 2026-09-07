@@ -1,0 +1,14 @@
+project:
+  name: "olist-late-delivery"
+  version: "1.0.0"
+
+model:
+  prediction_threshold: 0.5
+
+paths:
+  artifacts_dir: "artifacts"
+  model: "artifacts/final_model.joblib"
+  numeric_imputer: "artifacts/numeric_imputer.joblib"
+  encoder: "artifacts/onehot_encoder.joblib"
+  scaler: "artifacts/scaler.joblib"
+  feature_list: "artifacts/feature_list.joblib"

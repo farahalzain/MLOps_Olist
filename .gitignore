@@ -7,8 +7,20 @@ __pycache__/
 *.pyc
 .ipynb_checkpoints/
 
+# Virtual environments
+.venv/
+venv/
+
 # Environment files
 .env
+
+# Logs
+logs/
+*.log
+
+# Testing / tooling cache
+.pytest_cache/
+.ruff_cache/
 
 # OS files
 .DS_Store
