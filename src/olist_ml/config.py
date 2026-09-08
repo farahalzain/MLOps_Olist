@@ -16,3 +16,12 @@ def load_config():
         config = yaml.safe_load(file)
 
     return config
+
+
+def get_path(path_name):
+    """Return an absolute project path from the configuration."""
+    config = load_config()
+
+    relative_path = config["paths"][path_name]
+
+    return PROJECT_ROOT / relative_path
