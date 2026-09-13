@@ -7,6 +7,7 @@ from src.olist_ml.features import build_features
 from src.olist_ml.preprocessing import preprocess
 from src.olist_ml.validation import validate_input
 from src.olist_ml.logging_config import setup_logging
+from src.olist_ml.data_quality import validate_data_quality
 
 setup_logging()
 
@@ -32,6 +33,9 @@ def predict(df: pd.DataFrame) -> pd.DataFrame:
         # 1. Validate raw input
         validate_input(df)
         logger.info("Input validation passed")
+
+        validate_data_quality(df)
+        logger.info("Data quality validation passed")
 
         # 2. Create engineered features
         engineered_df = build_features(df)

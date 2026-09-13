@@ -25,3 +25,15 @@ logs/
 # OS files
 .DS_Store
 Thumbs.db
+/artifacts
+
+# MLflow local tracking
+mlflow.db
+mlruns/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Pytest cache
+.pytest_cache/
