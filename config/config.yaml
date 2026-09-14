@@ -12,3 +12,8 @@ paths:
   encoder: "artifacts/onehot_encoder.joblib"
   scaler: "artifacts/scaler.joblib"
   feature_list: "artifacts/feature_list.joblib"
+
+mlflow:
+  tracking_uri: "sqlite:///mlflow.db"
+  model_name: "olist-late-delivery-model"
+  model_version: "1"

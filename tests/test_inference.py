@@ -25,12 +25,13 @@ def test_predict_returns_expected_output():
 
     result = predict(df)
 
-    assert result.shape == (1, 3)
+    assert result.shape == (1, 4)
 
     assert result.columns.tolist() == [
         "prediction",
         "label",
         "late_probability",
+        "model_version",
     ]
 
     assert result["prediction"].iloc[0] in [0, 1]
@@ -41,3 +42,4 @@ def test_predict_returns_expected_output():
     ]
 
     assert 0 <= result["late_probability"].iloc[0] <= 1
+    assert str(result["model_version"].iloc[0]) == "1"

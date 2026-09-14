@@ -1,6 +1,8 @@
 import logging
-import joblib
 import pandas as pd
+import time
+import mlflow
+import mlflow.sklearn
 
 from src.olist_ml.config import get_path, load_config
 from src.olist_ml.features import build_features
@@ -14,21 +16,35 @@ setup_logging()
 logger = logging.getLogger(__name__)
 
 def load_model():
-    """Load the fitted final model."""
+    """Load the registered model from MLflow Model Registry."""
 
-    logger.info("Loading final model")
+    config = load_config()
 
-    model = joblib.load(get_path("model"))
+    tracking_uri = config["mlflow"]["tracking_uri"]
+    model_name = config["mlflow"]["model_name"]
+    model_version = config["mlflow"]["model_version"]
 
-    logger.info("Final model loaded successfully")
+    mlflow.set_tracking_uri(tracking_uri)
 
-    return model
+    model_uri = f"models:/{model_name}/{model_version}"
+
+    logger.info("Loading registered model | name=%s | version=%s", model_name, model_version,)
+
+    model = mlflow.sklearn.load_model(model_uri)
+
+    logger.info("Registered model loaded successfully")
+
+    return model, model_version
+
 
 def predict(df: pd.DataFrame) -> pd.DataFrame:
     """Predict late-delivery probability for new orders."""
 
-    logger.info("Starting inference for %d order(s)", len(df))
+    start_time = time.perf_counter()
 
+    logger.info("Starting inference for %d order(s)", len(df))
+    logger.info("Prediction input | %s", df.to_dict(orient="records"),)
+    
     try:
         # 1. Validate raw input
         validate_input(df)
@@ -49,7 +65,7 @@ def predict(df: pd.DataFrame) -> pd.DataFrame:
         )
 
         # 4. Load the fitted model
-        model = load_model()
+        model, model_version = load_model()
 
         # 5. Get the probability of class 1 = Late
         late_class_index = list(model.classes_).index(1)
@@ -74,11 +90,17 @@ def predict(df: pd.DataFrame) -> pd.DataFrame:
                     for prediction in predictions
                 ],
                 "late_probability": late_probability,
+                "model_version": model_version,
             }
         )
 
         logger.info("Inference completed successfully")
 
+        latency = time.perf_counter() - start_time
+
+        logger.info("Prediction completed | input_rows=%d | output=%s | latency=%.4fs | model_version=%s",
+            len(df),results.to_dict(orient="records"),latency, model_version)
+        
         return results
 
     except Exception:

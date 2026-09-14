@@ -18,14 +18,29 @@ def validate_data_quality(df):
     expectations = [
     gxe.ExpectColumnValuesToNotBeNull(column="customer_state"),
 
-    gxe.ExpectColumnValuesToBeBetween(    column="total_price", min_value=0),
+    gxe.ExpectColumnValuesToBeBetween(column="total_price", min_value=0),
 
-    gxe.ExpectColumnValuesToBeBetween(    column="total_freight", min_value=0),
+    gxe.ExpectColumnValuesToBeBetween(column="total_freight", min_value=0),
 
-    gxe.ExpectColumnValuesToBeBetween(    column="item_count", min_value=1),
+    gxe.ExpectColumnValuesToBeBetween(column="item_count", min_value=1),
 
-    gxe.ExpectColumnValuesToBeBetween(    column="distance_km", min_value=0),
+    gxe.ExpectColumnValuesToBeBetween(column="distance_km", min_value=0),
+
+    gxe.ExpectColumnValuesToBeInSet(column="customer_state",
+    value_set=[
+        "AC", "AL", "AP", "AM", "BA", "CE", "DF",
+        "ES", "GO", "MA", "MT", "MS", "MG", "PA",
+        "PB", "PR", "PE", "PI", "RJ", "RN", "RS",
+        "RO", "RR", "SC", "SP", "SE", "TO",], ),
     ]
+
+    gxe.ExpectColumnValuesToNotBeNull(column="total_price", mostly=0.99,),
+
+    gxe.ExpectColumnValuesToBeInTypeList(column="total_price", type_list=["float64", "int64"],),
+
+    gxe.ExpectColumnValuesToBeInTypeList(column="item_count", type_list=["int64"],),
+
+    gxe.ExpectColumnValuesToBeInTypeList(column="customer_state", type_list=["object", "str"],),
 
     results = []
 
