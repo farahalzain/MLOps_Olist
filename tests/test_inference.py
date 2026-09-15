@@ -1,9 +1,19 @@
+import numpy as np
 import pandas as pd
+
+import src.olist_ml.inference as inference_module
 
 from src.olist_ml.inference import predict
 
 
-def test_predict_returns_expected_output():
+class MockModel:
+    classes_ = np.array([0, 1])
+
+    def predict_proba(self, X):
+        return np.array([[0.3, 0.7] for _ in range(len(X))])
+
+
+def test_predict_returns_expected_output(monkeypatch):
     df = pd.DataFrame(
         {
             "customer_state": ["SP"],
@@ -23,6 +33,24 @@ def test_predict_returns_expected_output():
         }
     )
 
+    def mock_preprocess(engineered_df):
+        return pd.DataFrame({"feature": [1.0]})
+
+    def mock_load_model():
+        return MockModel(), "1"
+
+    monkeypatch.setattr(
+        inference_module,
+        "preprocess",
+        mock_preprocess,
+    )
+
+    monkeypatch.setattr(
+        inference_module,
+        "load_model",
+        mock_load_model,
+    )
+
     result = predict(df)
 
     assert result.shape == (1, 4)
@@ -34,12 +62,7 @@ def test_predict_returns_expected_output():
         "model_version",
     ]
 
-    assert result["prediction"].iloc[0] in [0, 1]
-
-    assert result["label"].iloc[0] in [
-        "Late",
-        "On Time",
-    ]
-
-    assert 0 <= result["late_probability"].iloc[0] <= 1
+    assert result["prediction"].iloc[0] == 1
+    assert result["label"].iloc[0] == "Late"
+    assert result["late_probability"].iloc[0] == 0.7
     assert str(result["model_version"].iloc[0]) == "1"

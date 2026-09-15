@@ -1,7 +1,8 @@
 from fastapi.testclient import TestClient
 
 from app.main import app
-
+import app.main as main_module
+import pandas as pd
 
 client = TestClient(app)
 
@@ -40,22 +41,51 @@ def test_model_info_endpoint():
     assert data["model_version"] == "1"
 
 
-def test_predict_endpoint():
-    response = client.post("/predict",json=VALID_ORDER,)
+def test_predict_endpoint(monkeypatch):
+    def mock_predict(input_df):
+        return pd.DataFrame(
+            [{
+                "prediction": 0,
+                "label": "On Time",
+                "late_probability": 0.2,
+                "model_version": "1",
+            }]
+        )
+
+    monkeypatch.setattr(main_module, "predict", mock_predict)
+
+    response = client.post("/predict", json=VALID_ORDER)
 
     assert response.status_code == 200
 
     data = response.json()
 
-    assert data["prediction"] in [0, 1]
-    assert data["label"] in ["Late", "On Time"]
-    assert 0 <= data["late_probability"] <= 1
+    assert data["prediction"] == 0
+    assert data["label"] == "On Time"
+    assert data["late_probability"] == 0.2
     assert data["model_version"] == "1"
 
 
-def test_predict_batch_endpoint():
-    response = client.post("/predict-batch",
-                           json={"orders": [VALID_ORDER, VALID_ORDER,]},)
+def test_predict_batch_endpoint(monkeypatch):
+    def mock_predict(input_df):
+        return pd.DataFrame(
+            [
+                {
+                    "prediction": 0,
+                    "label": "On Time",
+                    "late_probability": 0.2,
+                    "model_version": "1",
+                }
+                for _ in range(len(input_df))
+            ]
+        )
+
+    monkeypatch.setattr(main_module, "predict", mock_predict)
+
+    response = client.post(
+        "/predict-batch",
+        json={"orders": [VALID_ORDER, VALID_ORDER]},
+    )
 
     assert response.status_code == 200
 
@@ -64,16 +94,18 @@ def test_predict_batch_endpoint():
     assert len(data["predictions"]) == 2
 
     for prediction in data["predictions"]:
-        assert prediction["prediction"] in [0, 1]
-        assert prediction["label"] in ["Late", "On Time"]
-        assert 0 <= prediction["late_probability"] <= 1
+        assert prediction["prediction"] == 0
+        assert prediction["label"] == "On Time"
+        assert prediction["late_probability"] == 0.2
         assert prediction["model_version"] == "1"
-
 
 def test_predict_rejects_invalid_input():
     invalid_order = VALID_ORDER.copy()
     invalid_order["total_price"] = -100
 
-    response = client.post("/predict", json=invalid_order,)
+    response = client.post(
+        "/predict",
+        json=invalid_order,
+    )
 
     assert response.status_code == 422
