@@ -41,3 +41,6 @@ __pycache__/
 # Application logs
 logs/
 *.log
+
+# Local Docker package cache
+docker_packages/

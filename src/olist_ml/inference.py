@@ -3,6 +3,7 @@ import pandas as pd
 import time
 import mlflow
 import mlflow.sklearn
+import os
 
 from src.olist_ml.config import get_path, load_config
 from src.olist_ml.features import build_features
@@ -20,9 +21,11 @@ def load_model():
 
     config = load_config()
 
-    tracking_uri = config["mlflow"]["tracking_uri"]
-    model_name = config["mlflow"]["model_name"]
-    model_version = config["mlflow"]["model_version"]
+    tracking_uri = os.getenv("MLFLOW_TRACKING_URI", config["mlflow"]["tracking_uri"],)
+
+    model_name = os.getenv("MLFLOW_MODEL_NAME", config["mlflow"]["model_name"],)
+
+    model_version = os.getenv("MLFLOW_MODEL_VERSION", str(config["mlflow"]["model_version"]),)
 
     mlflow.set_tracking_uri(tracking_uri)
 
@@ -44,7 +47,7 @@ def predict(df: pd.DataFrame) -> pd.DataFrame:
 
     logger.info("Starting inference for %d order(s)", len(df))
     logger.info("Prediction input | %s", df.to_dict(orient="records"),)
-    
+
     try:
         # 1. Validate raw input
         validate_input(df)

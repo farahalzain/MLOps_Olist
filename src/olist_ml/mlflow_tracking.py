@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import mlflow
 import pandas as pd
@@ -14,7 +15,10 @@ def log_final_model_run():
     """Log the final Tuned Random Forest results to MLflow."""
 
     # Store MLflow tracking data locally inside the project
-    mlflow.set_tracking_uri(f"sqlite:///{(PROJECT_ROOT / 'mlflow.db').as_posix()}")
+    tracking_uri = os.getenv("MLFLOW_TRACKING_URI",
+    f"sqlite:///{(PROJECT_ROOT / 'mlflow.db').as_posix()}",)
+
+    mlflow.set_tracking_uri(tracking_uri)
 
     mlflow.set_experiment("olist-late-delivery")
 
