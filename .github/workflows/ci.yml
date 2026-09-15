@@ -28,5 +28,5 @@ jobs:
       - name: Run tests
         run: pytest -v
       
-      - name: Build API Docker image
-        run: docker build -t olist-api-ci-test .
+      - name: Build Docker Compose services
+        run: docker compose build
